@@ -20,8 +20,8 @@ class Dashboard extends React.Component {
     render(){
     return(
         <div className="dashboard">
-            <span className="breach-alarm">BREACH? {this.state.breachAlarm = 0 ? "OH GOD YEAH": "all good"}</span>
-            <span className="rolling-message">Message: {this.state.rollingMessage}</span>
+            <div className="breach-alarm">BREACH? {this.state.breachAlarm = 0 ? "OH GOD YEAH": "all good"}</div>
+            <div className="rolling-message">Message: {this.state.rollingMessage}</div>
         </div>
     );
     }
@@ -34,23 +34,26 @@ class PostItControl extends React.Component {
 
         this.state = {
             displayInfo: {
-                1: [100, 100, "test"],
-                2: [200, 100, "test2"]} //as ID # in key, & list [xpos, ypos, displayText].
+                1: {x:0, y:0, text:"test"},
+                2: {x:200, y:100, text:"test2"}} //as ID # in key, & list [xpos, ypos, displayText].
         }
         console.log(this.state);
     }
     
-    PostIt({id, xpos, ypos, displayText}){
+    PostIt({id, xpos, ypos, displayText, moveItemFunc}){
             console.log("post it!", id, xpos, ypos, displayText);
             return(
-                <span style={{border: "2px red solid", background: "hotpink", position: "fixed", bottom: ypos, right: xpos, width: "150px", height: "150px"}}>
+                <span onDragEnd={(e) => moveItemFunc(id, e)} draggable="true" style={{border: "2px red solid", background: "hotpink", position: "fixed", top: ypos, left: xpos, width: "150px", height: "150px"}}>
                     {displayText}</span>
             );
         }
-    createPostIt(){
+    
+    createPostIt(text){
         
         const tempDisplayInfo = this.state.displayInfo;
-        tempDisplayInfo[4] = [10, 30, "sgjdlh"];
+        const nextId = parseInt(Object.keys(tempDisplayInfo).slice(-1)) + 1
+
+        tempDisplayInfo[nextId] = {x:10, y:30, text:text};
 
         console.log("ugh", tempDisplayInfo);
         
@@ -58,22 +61,38 @@ class PostItControl extends React.Component {
             displayInfo: tempDisplayInfo
         })
     }
-    destroyPostIt(i){
+    destroyPostIt(id){
     }
+    movePostIt = (id, eventObj) => {
+        //eventStopper.stopPropogation();
+        eventObj.preventDefault(); //prevents... something
+        
+        console.log(id);
+
+        const tempDisplayInfo={};
+
+        Object.assign(tempDisplayInfo, this.state.displayInfo);
+
+        console.log("X", eventObj.pageX, "\nY", eventObj.pageY);
+        tempDisplayInfo[id]={x:eventObj.pageX, y:eventObj.pageY, text:tempDisplayInfo[id].text};
+        this.setState({displayInfo: tempDisplayInfo});
+        console.log("HELP", this.state.displayInfo);
+        console.log("moved!!!");
+    }
+
 
     render(){
 
         const displayInfo = this.state.displayInfo;
         console.log(displayInfo);
     return(
-        <span className="post-it-control">
-            <button onClick={() => this.createPostIt()}> make new post it </button>
+        <div className="post-it-control">
+            <button onClick={() => this.createPostIt("sdfhdksh")}> + post it </button>
 
             {Object.keys(displayInfo).map(key => (
-                <this.PostIt id={key} xpos={displayInfo[key][0]} ypos={displayInfo[key][1]} displayText={displayInfo[key][2]} key={key}/>
+                <this.PostIt id={key} moveItemFunc={this.movePostIt} xpos={displayInfo[key].x} ypos={displayInfo[key].y} displayText={displayInfo[key].text} key={key}/>
                 ))}
-            {/* <this.PostIt xpos={700} ypos={100} displayText={"lsdk;aowiehfd;lkfjldj"}/> */}
-        </span>
+        </div>
     );
     }
 }
@@ -88,39 +107,48 @@ class VideoFeedControl extends React.Component {
                 "Containment Hallway": "hallway.img",
                 "Testing Room A": "room.img",
                 "Untitled": "insert youtube i-frame",
-                "": "empty.img"
+                "clear": "empty.img"
             },
-            activeFeeds: ["Testing Room A", "Untitled", "Lobby", ""]
+            activeFeeds: ["Testing Room A", "Untitled", "Lobby", "clear"]
         }
 
         console.log("test", this.state);
     }
 
-    VideoFeed({xpos, ypos, feedName, feedDisplay}){
-        console.log("vid feed!", xpos, ypos, feedName, feedDisplay);
+    VideoFeed({feedName, feedDisplay}){
+        console.log("vid feed!", feedName, feedDisplay);
         return(
-            <span style={{background: "black", color: "white", border: "2px red solid", borderRadius: 10, position: "fixed", bottom: ypos, right: xpos, width: 200, height: 150}}>
+            <div style={{background: "black", color: "white", border: "2px red solid", borderRadius: 10, width: 200, height: 150}}>
                 {feedDisplay}
                 <br></br>
                 {feedName}
-            </span>
+            </div>
         );
     }
-    VideoFeedList({dirItems}){
+    VideoFeedList({dirItems, changeFeedFunc}){
         dirItems = dirItems.sort();
         console.log(dirItems);
 
         return(
-            <span>
-                {dirItems.map((feedName) =>
-                <button onClick={this.changeVideoFeed(feedName)}>{feedName}</button>
+            <div className="video-feed-dir">
+                {dirItems.map((feedName, index) =>
+                <button onClick={() => (changeFeedFunc(feedName))} key={feedName+index} className={feedName}>{feedName}</button>
                 )}
-            </span>
+            </div>
         )
     }
 
-    changeVideoFeed(feedName){
-        console.log("hi!!");
+    changeVideoFeed = (feedName) => {
+        const tempActiveFeeds = [];
+        Object.assign(tempActiveFeeds, this.state.activeFeeds);
+        console.log(tempActiveFeeds, feedName);
+
+        tempActiveFeeds[2] = feedName;
+
+        this.setState({
+            activeFeeds: tempActiveFeeds
+        })
+
     }
 
     videoFeedEvent({feedName, eventType}){
@@ -128,21 +156,21 @@ class VideoFeedControl extends React.Component {
     }
 
     render(){
-
-        const slotTranslation = { //locations of each of 4 vid feed slots as (x,y)
-            0: [500,500],
-            1: [300,500],
-            2: [500,300],
-            3: [300,300]
-            }
-        console.log("help", slotTranslation[0]);
     return(
-        <>
-            {this.state.activeFeeds.map((feedName, slot) =>
-                <this.VideoFeed xpos={slotTranslation[slot][0]} ypos={slotTranslation[slot][1]} feedName={feedName} feedDisplay={this.state.feedDisplays[feedName]} key={feedName+slot}/>
-            )}
-            <this.VideoFeedList dirItems={Object.keys(this.state.feedDisplays)}/>
-        </>
+        <div className="video-feed">
+            <div>
+                {this.state.activeFeeds.slice(0,2).map((feedName, slot) =>
+                <this.VideoFeed feedName={feedName} feedDisplay={this.state.feedDisplays[feedName]} key={feedName+slot}/>
+                )}
+            </div>
+            <div>
+                {this.state.activeFeeds.slice(2,4).map((feedName, slot) =>
+                <this.VideoFeed feedName={feedName} feedDisplay={this.state.feedDisplays[feedName]} key={feedName+slot}/>
+                )}
+            </div>
+            
+            <this.VideoFeedList changeFeedFunc={this.changeVideoFeed} dirItems={Object.keys(this.state.feedDisplays)}/>
+        </div>
     );
     }
 }
