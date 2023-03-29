@@ -18,6 +18,7 @@ class Dashboard extends React.Component {
     }
 
     render(){
+        document.body.style = 'background: lightslategrey;'; //https://stackoverflow.com/questions/42464888/how-do-i-change-the-background-color-of-the-body
     return(
         <div className="dashboard">
             <div className="breach-alarm">BREACH? {this.state.breachAlarm = 0 ? "OH GOD YEAH": "all good"}</div>
@@ -34,8 +35,8 @@ class PostItControl extends React.Component {
 
         this.state = {
             displayInfo: {
-                1: {x:0, y:0, text:"test"},
-                2: {x:200, y:100, text:"test2"}} //as ID # in key, & list [xpos, ypos, displayText].
+                1: {x:400, y:250, text:"check amnestics shipment"} //as ID # in key, & list [xpos, ypos, displayText].
+            } 
         }
         console.log(this.state);
     }
@@ -43,28 +44,48 @@ class PostItControl extends React.Component {
     PostIt({id, xpos, ypos, displayText, moveItemFunc}){
             console.log("post it!", id, xpos, ypos, displayText);
             return(
-                <span onDragEnd={(e) => moveItemFunc(id, e)} draggable="true" style={{border: "2px red solid", background: "hotpink", position: "fixed", top: ypos, left: xpos, width: "150px", height: "150px"}}>
+                <span onDragEnd={(e) => moveItemFunc(id, e)} draggable="true" className="post-it-indv" style={{top: ypos, left: xpos}}>
                     {displayText}</span>
             );
         }
+    PostItCreatorField({createPostIt}){
+        
+        const [inputValue, updateInputValue] = useState("write something") //taken right from your thermometer example :thumbs_up:
     
-    createPostIt(text){
+        function inputUpdate(evt) {
+            updateInputValue(evt.target.value)
+        }
+
+        return(
+            <>
+                <input value={inputValue} onChange={inputUpdate} />
+                <button onClick={() => createPostIt(inputValue)}> + post it </button>
+            </>
+        );
+    }
+    
+    createPostIt = (text) => {
         
         const tempDisplayInfo = this.state.displayInfo;
         const nextId = parseInt(Object.keys(tempDisplayInfo).slice(-1)) + 1
 
-        tempDisplayInfo[nextId] = {x:10, y:30, text:text};
+        function getRndInteger(min, max) { //thanks https://www.w3schools.com/js/js_random.asp
+            return Math.floor(Math.random() * (max - min + 1) ) + min;
+        }
 
-        console.log("ugh", tempDisplayInfo);
+        tempDisplayInfo[nextId] = {x:getRndInteger(250,350), y:getRndInteger(250,350), text:text};
+
+        console.log("new post it made", tempDisplayInfo);
         
         this.setState({
             displayInfo: tempDisplayInfo
         })
     }
     destroyPostIt(id){
+        //TODO
     }
     movePostIt = (id, eventObj) => {
-        //eventStopper.stopPropogation();
+        //eventStopper.stopPropogation(); //prevents parent components from doing uneeded rerendering/updating
         eventObj.preventDefault(); //prevents... something
         
         console.log(id);
@@ -74,7 +95,7 @@ class PostItControl extends React.Component {
         Object.assign(tempDisplayInfo, this.state.displayInfo);
 
         console.log("X", eventObj.pageX, "\nY", eventObj.pageY);
-        tempDisplayInfo[id]={x:eventObj.pageX, y:eventObj.pageY, text:tempDisplayInfo[id].text};
+        tempDisplayInfo[id]={x:eventObj.pageX, y:eventObj.pageY, text:tempDisplayInfo[id].text}; //TODO: fix discrepancy btwn perceived mouse pos and location post-it ends up in
         this.setState({displayInfo: tempDisplayInfo});
         console.log("HELP", this.state.displayInfo);
         console.log("moved!!!");
@@ -87,7 +108,7 @@ class PostItControl extends React.Component {
         console.log(displayInfo);
     return(
         <div className="post-it-control">
-            <button onClick={() => this.createPostIt("sdfhdksh")}> + post it </button>
+            <this.PostItCreatorField createPostIt={this.createPostIt}/>
 
             {Object.keys(displayInfo).map(key => (
                 <this.PostIt id={key} moveItemFunc={this.movePostIt} xpos={displayInfo[key].x} ypos={displayInfo[key].y} displayText={displayInfo[key].text} key={key}/>
@@ -109,46 +130,76 @@ class VideoFeedControl extends React.Component {
                 "Untitled": "insert youtube i-frame",
                 "clear": "empty.img"
             },
-            activeFeeds: ["Testing Room A", "Untitled", "Lobby", "clear"]
+            activeFeeds: ["Testing Room A", "Untitled", "Lobby", "clear"],
+            visibleButtonSets: {
+                "Lobby": false,
+                "Containment Hallway": false,
+                "Testing Room A": false,
+                "Untitled": false,
+                "clear": false //can't autogenerate by referencing feedDisplays :pensive:
+                //also ik an obj is probably overkill but it's nice to reference the keys rather than translating to list index
+            },
         }
 
         console.log("test", this.state);
     }
 
-    VideoFeed({feedName, feedDisplay}){
+    VideoFeed({feedName, feedDisplay}){ //theoretically feedDisplay is a video/img but leaving that as an excersise for the viewer
         console.log("vid feed!", feedName, feedDisplay);
         return(
-            <div style={{background: "black", color: "white", border: "2px red solid", borderRadius: 10, width: 200, height: 150}}>
+            <div className="video-feed-indv">
                 {feedDisplay}
                 <br></br>
                 {feedName}
             </div>
         );
     }
-    VideoFeedList({dirItems, changeFeedFunc}){
+    VideoFeedList({dirItems, dirVisible, changeFeedFunc, toggleFeedSlotSelector, FeedSelectButton}){
         dirItems = dirItems.sort();
-        console.log(dirItems);
 
         return(
             <div className="video-feed-dir">
-                {dirItems.map((feedName, index) =>
-                <button onClick={() => (changeFeedFunc(feedName))} key={feedName+index} className={feedName}>{feedName}</button>
-                )}
+                {dirItems.map((feedName, index) => <>
+                <button onClick={() => toggleFeedSlotSelector(feedName)} key={feedName+index} className={feedName}>{feedName}</button>
+                <div className={feedName+"-button-set nav-button-set"} style={{visibility: dirVisible[feedName] ? "visible" : "hidden", height: dirVisible[feedName] ? "auto" : "0"}}><FeedSelectButton slot={1} feedName={feedName} changeFeedFunc={changeFeedFunc}/><FeedSelectButton slot={2} feedName={feedName} changeFeedFunc={changeFeedFunc}/><FeedSelectButton slot={3} feedName={feedName} changeFeedFunc={changeFeedFunc}/><FeedSelectButton slot={4} feedName={feedName} changeFeedFunc={changeFeedFunc}/></div>
+                </>)}
             </div>
         )
     }
+    FeedSelectButton({slot,feedName,changeFeedFunc}){
+        return(
+            <button onClick={() => (changeFeedFunc(feedName,slot))} key={feedName+slot+"button"}>{slot}</button>
+        )
+    }
 
-    changeVideoFeed = (feedName) => {
-        const tempActiveFeeds = [];
-        Object.assign(tempActiveFeeds, this.state.activeFeeds);
-        console.log(tempActiveFeeds, feedName);
-
-        tempActiveFeeds[2] = feedName;
+    toggleFeedSlotSelector = (feedName) => {
+        console.log("TOGGLE:", this.state.visibleButtonSets);
+        const tempVisibleButtonSets = {};
+        Object.assign(tempVisibleButtonSets, this.state.visibleButtonSets);
+        
+        tempVisibleButtonSets[feedName] = !tempVisibleButtonSets[feedName];
 
         this.setState({
-            activeFeeds: tempActiveFeeds
-        })
+            visibleButtonSets: tempVisibleButtonSets
+        });
 
+    }
+    changeVideoFeed = (feedName,slot) => {
+        const tempActiveFeeds = [];
+        Object.assign(tempActiveFeeds, this.state.activeFeeds);
+        
+        tempActiveFeeds[slot-1] = feedName;
+
+        this.setState({
+            activeFeeds: tempActiveFeeds,
+            visibleButtonSets: {
+                "Lobby": false,
+                "Containment Hallway": false,
+                "Testing Room A": false,
+                "Untitled": false,
+                "clear": false
+            }
+        });
     }
 
     videoFeedEvent({feedName, eventType}){
@@ -156,20 +207,23 @@ class VideoFeedControl extends React.Component {
     }
 
     render(){
+
     return(
-        <div className="video-feed">
-            <div>
-                {this.state.activeFeeds.slice(0,2).map((feedName, slot) =>
-                <this.VideoFeed feedName={feedName} feedDisplay={this.state.feedDisplays[feedName]} key={feedName+slot}/>
-                )}
-            </div>
-            <div>
-                {this.state.activeFeeds.slice(2,4).map((feedName, slot) =>
-                <this.VideoFeed feedName={feedName} feedDisplay={this.state.feedDisplays[feedName]} key={feedName+slot}/>
-                )}
+        <div className="video-feed-container">
+            <div className="video-feed-row">
+                <div>
+                    {this.state.activeFeeds.slice(0,2).map((feedName, slot) =>
+                    <this.VideoFeed feedName={feedName} feedDisplay={this.state.feedDisplays[feedName]} key={feedName+slot}/>
+                    )}
+                </div>
+                <div>
+                    {this.state.activeFeeds.slice(2,4).map((feedName, slot) =>
+                    <this.VideoFeed feedName={feedName} feedDisplay={this.state.feedDisplays[feedName]} key={feedName+slot}/>
+                    )}
+                </div>
             </div>
             
-            <this.VideoFeedList changeFeedFunc={this.changeVideoFeed} dirItems={Object.keys(this.state.feedDisplays)}/>
+            <this.VideoFeedList FeedSelectButton={this.FeedSelectButton} changeFeedFunc={this.changeVideoFeed} toggleFeedSlotSelector={this.toggleFeedSlotSelector} dirItems={Object.keys(this.state.feedDisplays)} dirVisible={this.state.visibleButtonSets}/>
         </div>
     );
     }

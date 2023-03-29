@@ -1,13 +1,37 @@
-.dashboard, .video-feed-dir{
+.document, .dashboard, .video-feed-dir {
     display: flex;
     flex-direction: column;
+    background-color: lightslategray;
 }
 
-.video-feed{
+.breach-alarm {
+    font-size: 24px;
+}
+
+.video-feed-container {
     display: flex;
 }
-
-.break{
-    flex-basis: 100%;
+.video-feed-row > div {
+    display: flex;
+    flex-direction: row;
+}
+.video-feed-indv {
+    background: black;
+    color: white;
+    border: 3px lightslategray solid;
+    border-radius: 10px;
+    width: 200px;
+    height: 150px;
+}
+.nav-button-set {
+    visibility: hidden;
     height: 0px;
+}
+
+.post-it-indv {
+    border: 1px goldenrod solid;
+    background: lightgoldenrodyellow;
+    position: fixed;
+    width: 150px;
+    height: 150px;
 }
