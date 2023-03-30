@@ -1,7 +1,6 @@
-.document, .dashboard, .video-feed-dir {
+.document, .dashboard, .video-feed-dir { /*various containers */
     display: flex;
     flex-direction: column;
-    background-color: lightslategray;
 }
 
 .breach-alarm {

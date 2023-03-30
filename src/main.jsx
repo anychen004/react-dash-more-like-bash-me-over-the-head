@@ -5,7 +5,7 @@ import {useState} from 'react'
 import reactLogo from './assets/react.svg'
 //import './App.css'
 
-class Dashboard extends React.Component {
+class Dashboard extends React.Component { //container for breach alarm, rolling message
     constructor(){
         super()
 
@@ -17,9 +17,8 @@ class Dashboard extends React.Component {
         console.log(this.state);
     }
 
-    breachEventRandomizer = () => {
-        //console.log("breach init", this.state.breachAlarm);
-        if (Math.random()>0.1) {
+    breachEventRandomizer = () => { //randomly turns on breach alarm
+        if (Math.random()>0.9) {
             this.setState({ breachAlarm: true }, () => console.log(this.state.breachAlarm)); //https://stackoverflow.com/questions/41446560/react-setstate-not-updating-state
         }
     }
@@ -64,11 +63,11 @@ class PostItControl extends React.Component {
                     {displayText}</span>
             );
         }
-    PostItCreatorField({createPostIt}){
+    PostItCreatorField({createPostIt}){ //the text field & "create post it" button
         
-        const [inputValue, updateInputValue] = useState("write something") //taken right from your thermometer example :thumbs_up:
+        const [inputValue, updateInputValue] = useState("write something")
     
-        function inputUpdate(evt) {
+        function inputUpdate(evt) { //taken right from your thermometer example :thumbs_up:
             updateInputValue(evt.target.value)
         }
 
@@ -80,7 +79,7 @@ class PostItControl extends React.Component {
         );
     }
     
-    createPostIt = (text) => {
+    createPostIt = (text) => { //actual func creating post-its
         
         const tempDisplayInfo = this.state.displayInfo;
         const nextId = parseInt(Object.keys(tempDisplayInfo).slice(-1)) + 1
@@ -139,7 +138,7 @@ class VideoFeedControl extends React.Component {
         super()
 
         this.state = {
-            feedDisplays: {
+            feedDisplays: { //dict of feedName : corresponding image file.
                 "Lobby": "Lobby.img",
                 "Containment Hallway": "hallway.img",
                 "Testing Room A": "room.img",
@@ -147,7 +146,7 @@ class VideoFeedControl extends React.Component {
                 "clear": "empty.img"
             },
             activeFeeds: ["Testing Room A", "Untitled", "Lobby", "clear"],
-            visibleButtonSets: {
+            visibleButtonSets: { //for hiding/showing the "1,2,3,4" buttons for selecting slots
                 "Lobby": false,
                 "Containment Hallway": false,
                 "Testing Room A": false,
@@ -188,7 +187,7 @@ class VideoFeedControl extends React.Component {
         )
     }
 
-    toggleFeedSlotSelector = (feedName) => {
+    toggleFeedSlotSelector = (feedName) => { //alters visibleButtonSets so that it shows/hides the "1,2,3,4" feed selector button set
         console.log("TOGGLE:", this.state.visibleButtonSets);
         const tempVisibleButtonSets = {};
         Object.assign(tempVisibleButtonSets, this.state.visibleButtonSets);
