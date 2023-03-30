@@ -16,7 +16,7 @@
     flex-direction: row;
 }
 .video-feed-indv {
-    background: black;
+    background: rgb(40, 46, 51);
     color: white;
     border: 3px lightslategray solid;
     border-radius: 10px;

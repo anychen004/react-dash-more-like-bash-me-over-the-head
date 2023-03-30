@@ -17,11 +17,27 @@ class Dashboard extends React.Component {
         console.log(this.state);
     }
 
+    breachEventRandomizer = () => {
+        //console.log("breach init", this.state.breachAlarm);
+        if (Math.random()>0.1) {
+            this.setState({ breachAlarm: true }, () => console.log(this.state.breachAlarm)); //https://stackoverflow.com/questions/41446560/react-setstate-not-updating-state
+        }
+    }
+    updateRollingMessage = (message) => {
+        //TODO
+    }
+
+    componentDidMount() {
+        console.log("breach randomizing begun");
+        setInterval(this.breachEventRandomizer, 10000);
+    }
+
     render(){
         document.body.style = 'background: lightslategrey;'; //https://stackoverflow.com/questions/42464888/how-do-i-change-the-background-color-of-the-body
     return(
         <div className="dashboard">
-            <div className="breach-alarm">BREACH? {this.state.breachAlarm = 0 ? "OH GOD YEAH": "all good"}</div>
+            <div className="breach-alarm" style={{color: this.state.breachAlarm == false ? "black" : "greenyellow"}}>BREACH? {this.state.breachAlarm == false ? "all good" : "WEEWOOOEWOWEOWOEOWOE [alarm noises]"}</div>
+            <button onClick={() => this.setState({breachAlarm:false}, () => console.log(this.state.breachAlarm))}>clear breach alarm</button>
             <div className="rolling-message">Message: {this.state.rollingMessage}</div>
         </div>
     );
